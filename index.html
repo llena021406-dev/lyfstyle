@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LyfStyle</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Epilogue:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="lyfstyle-styles.css">
+<script src="lyfstyle-script.js"></script>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- REST TIMER OVERLAY -->
+<div class="rest-overlay" id="restOverlay">
+  <div style="font-size:14px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Rest Time</div>
+  <div class="rest-num" id="restNum">60</div>
+  <div class="rest-label">seconds remaining</div>
+  <button class="btn btn-ghost" onclick="stopRest()">Skip →</button>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-card">
+    <div class="ob-logo">Lyf</div>
+    <div class="ob-prog">
+      <div class="ob-dot done" id="d1"></div>
+      <div class="ob-dot" id="d2"></div>
+      <div class="ob-dot" id="d3"></div>
+      <div class="ob-dot" id="d4"></div>
+    </div>
+
+    <!-- Step 1: Body stats -->
+    <div class="ob-step active" id="ob1">
+      <div class="ob-title">Tell us about you</div>
+      <div class="ob-sub">We'll calculate your ideal calorie target and build a custom plan.</div>
+      <div class="inp-row">
+        <div class="field"><label>Name</label><input class="inp" id="ob-name" placeholder="Alex"></div>
+        <div class="field"><label>Age</label><input class="inp" id="ob-age" type="number" placeholder="28"></div>
+      </div>
+      <div class="inp-row">
+        <div class="field">
+          <label>Height (cm)</label><input class="inp" id="ob-height" type="number" placeholder="170"></div>
+        <div class="field">
+          <label>Weight (kg)</label><input class="inp" id="ob-weight" type="number" placeholder="75"></div>
+      </div>
+      <div class="inp-row">
+        <div class="field"><label>Sex</label>
+          <select class="inp" id="ob-sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="field"><label>Activity</label>
+          <select class="inp" id="ob-activity">
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Lightly active</option>
+            <option value="1.55" selected>Moderately active</option>
+            <option value="1.725">Very active</option>
+            <option value="1.9">Athlete</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-lime btn-full" onclick="obStep1()">Continue →</button>
+    </div>
+
+    <!-- Step 2: BMI + Goal -->
+    <div class="ob-step" id="ob2">
+      <div class="ob-title">Your starting point</div>
+      <div class="ob-sub">Based on your stats — here's where you stand.</div>
+      <div class="bmi-badge">
+        <div>
+          <div class="bmi-big" id="ob-bmi-num">—</div>
+          <div style="font-size:12px;font-weight:600;margin-top:2px">BMI</div>
+        </div>
+        <div>
+          <div style="font-size:18px;font-weight:700;font-family:'Syne',sans-serif" id="ob-bmi-cat">—</div>
+          <div style="font-size:12px;opacity:0.7">Body Mass Index</div>
+        </div>
+      </div>
+      <div class="section-label" style="margin-bottom:10px">What's your goal?</div>
+      <div class="goal-grid">
+        <div class="goal-opt" data-goal="lose" onclick="selectGoal(this)"><div class="icon">🔥</div><div class="lbl">Lose Weight</div></div>
+        <div class="goal-opt" data-goal="maintain" onclick="selectGoal(this)"><div class="icon">⚖️</div><div class="lbl">Stay Active</div></div>
+        <div class="goal-opt" data-goal="gain" onclick="selectGoal(this)"><div class="icon">💪</div><div class="lbl">Build Muscle</div></div>
+      </div>
+      <button class="btn btn-lime btn-full" onclick="obStep2()">Continue →</button>
+    </div>
+
+    <!-- Step 3: Target -->
+    <div class="ob-step" id="ob3">
+      <div class="ob-title">Set your target</div>
+      <div class="ob-sub">We'll adjust your calories each week to keep you on track.</div>
+      <div class="inp-row">
+        <div class="field"><label>Target Weight (kg)</label><input class="inp" id="ob-target" type="number" placeholder="68"></div>
+        <div class="field"><label>Weekly Rate (kg)</label>
+          <select class="inp" id="ob-rate">
+            <option value="0.25">−0.25 kg/week</option>
+            <option value="0.5" selected>−0.5 kg/week</option>
+            <option value="0.75">−0.75 kg/week</option>
+            <option value="1">−1.0 kg/week</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Equipment available</label>
+        <select class="inp" id="ob-equip">
+          <option value="none">No equipment (bodyweight)</option>
+          <option value="dumbbells">Dumbbells</option>
+          <option value="gym">Full gym</option>
+        </select>
+      </div>
+      <button class="btn btn-lime btn-full" onclick="obStep3()">Continue →</button>
+    </div>
+
+    <!-- Step 4: Summary -->
+    <div class="ob-step" id="ob4">
+      <div class="ob-title">Your plan is ready 🎯</div>
+      <div class="ob-sub">Here's your personalised daily targets.</div>
+      <div id="ob-summary" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+      <button class="btn btn-lime btn-full" onclick="finishOnboarding()">Start My Journey →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="appWrap" style="display:none">
+  <aside class="sidebar">
+    <div class="logo-mark">Lyf</div>
+    <nav class="nav">
+      <button class="nav-item active" data-page="today" onclick="goTo('today')" title="Today">🏠</button>
+      <button class="nav-item" data-page="food" onclick="goTo('food')" title="Food Log">🍽️</button>
+      <button class="nav-item" data-page="workout" onclick="goTo('workout')" title="Workouts">🏋️</button>
+      <button class="nav-item" data-page="progress" onclick="goTo('progress')" title="Progress">📈</button>
+      <button class="nav-item" data-page="reminders" onclick="goTo('reminders')" title="Reminders">🔔<span class="badge"></span></button>
+    </nav>
+    <button class="nav-item signout" onclick="signOut()" title="Sign out">↩</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- TODAY -->
+    <div class="panel active" id="page-today">
+      <div class="panel-header">
+        <div><div class="panel-sub" id="today-date"></div><div class="panel-title" id="today-greeting">Good morning!</div></div>
+        <div style="font-size:24px" id="today-streak-badge"></div>
+      </div>
+      <div class="scroll-area">
+        <div id="checkin-area"></div>
+        <div class="today-grid">
+          <div class="today-big">
+            <div class="calorie-card">
+              <div class="calorie-nums">
+                <div class="cal-remain" id="td-cal-remain">—</div>
+                <div class="cal-label">kcal remaining today</div>
+                <div class="cal-breakdown">
+                  <div class="cal-item"><div class="v" id="td-budget">—</div><div class="l">Budget</div></div>
+                  <div class="cal-item"><div class="v" id="td-eaten">0</div><div class="l">Eaten</div></div>
+                  <div class="cal-item"><div class="v" id="td-protein">0g</div><div class="l">Protein</div></div>
+                  <div class="cal-item"><div class="v" id="td-carbs">0g</div><div class="l">Carbs</div></div>
+                  <div class="cal-item"><div class="v" id="td-fat">0g</div><div class="l">Fat</div></div>
+                </div>
+                <div class="macro-bar"><div class="macro-fill" id="cal-bar" style="background:var(--lime);width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Water -->
+          <div class="card water-card">
+            <div class="section-label">💧 Water</div>
+            <div class="water-glasses" id="water-glasses"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+              <span style="font-size:12px;color:var(--muted)" id="water-count">0 / 8 glasses</span>
+              <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="addWater()">+250ml</button>
+            </div>
+          </div>
+
+          <!-- Steps -->
+          <div class="stat-mini">
+            <div style="font-size:20px;margin-bottom:4px">👟</div>
+            <div class="sv" id="td-steps">0</div>
+            <div class="sl">Steps today</div>
+            <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;margin-top:8px" onclick="logSteps()">Log steps</button>
+          </div>
+
+          <!-- Today's Workout -->
+          <div class="today-big">
+            <div class="section-label">🔥 Do This Today</div>
+            <div class="card workout-today" id="today-workout-card" onclick="goTo('workout')"></div>
+          </div>
+
+          <!-- Weight log quick -->
+          <div class="today-big">
+            <div class="section-label">⚖️ Log Today's Weight</div>
+            <div class="card">
+              <div style="display:flex;gap:10px">
+                <input class="inp" id="quick-weight" type="number" step="0.1" placeholder="e.g. 74.2 kg" style="flex:1">
+                <button class="btn btn-lime" onclick="quickLogWeight()">Log</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOD LOG -->
+    <div class="panel" id="page-food">
+      <div class="panel-header">
+        <div><div class="panel-sub">Nutrition</div><div class="panel-title">Food Log</div></div>
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px" onclick="toggleCustomFood()">+ Custom</button>
+      </div>
+      <div class="food-search-wrap">
+        <div class="search-wrap">
+          <input class="search-box" id="food-search" placeholder="Search foods…" oninput="searchFoods(this.value)">
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div id="custom-food-area" style="display:none;padding-top:12px">
+          <div class="custom-food-form">
+            <div class="section-label">Custom food entry</div>
+            <div class="cf-grid">
+              <div class="field" style="margin:0"><label>Name</label><input class="inp" id="cf-name" placeholder="Food name"></div>
+              <div class="field" style="margin:0"><label>Cal</label><input class="inp" id="cf-cal" type="number" placeholder="0"></div>
+              <div class="field" style="margin:0"><label>Protein g</label><input class="inp" id="cf-pro" type="number" placeholder="0"></div>
+              <div class="field" style="margin:0"><label>Carbs g</label><input class="inp" id="cf-carbs" type="number" placeholder="0"></div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <select class="inp" id="cf-meal" style="flex:1;padding:9px 12px">
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snacks">Snacks</option>
+              </select>
+              <button class="btn btn-lime" onclick="addCustomFood()">Add Food</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="search-results" style="padding:0 24px"></div>
+
+        <div id="food-log-sections"></div>
+      </div>
+    </div>
+
+    <!-- WORKOUTS -->
+    <div class="panel" id="page-workout">
+      <div class="panel-header">
+        <div><div class="panel-sub">Training</div><div class="panel-title" id="workout-panel-title">Your Plan</div></div>
+        <div id="workout-back-btn"></div>
+      </div>
+      <div class="workout-tabs" id="workout-tabs"></div>
+      <div class="scroll-area">
+        <div class="plan-card" id="plan-info"></div>
+        <div style="padding:0 24px" id="workout-days-list"></div>
+        <div class="workout-detail" id="workout-detail-view"></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="panel" id="page-progress">
+      <div class="panel-header">
+        <div><div class="panel-sub">Your journey</div><div class="panel-title">Progress</div></div>
+      </div>
+      <div class="scroll-area">
+        <div class="chart-wrap" style="padding-top:16px">
+          <div class="section-label" style="padding:0 24px 8px">Weight trend</div>
+          <div class="chart-box"><canvas id="weightChart"></canvas></div>
+        </div>
+        
+        <div style="padding:0 24px;margin-bottom:16px">
+          <div class="section-label">BMI Calculator</div>
+          <div class="card">
+            <div class="inp-row">
+              <div class="field" style="margin-bottom:0"><label>Height (cm)</label><input class="inp" id="bmi-h" type="number" placeholder="170"></div>
+              <div class="field" style="margin-bottom:0"><label>Weight (kg)</label><input class="inp" id="bmi-w" type="number" placeholder="70"></div>
+            </div>
+            <button class="btn btn-lime btn-full" style="margin-top:12px" onclick="calcBMI()">Calculate BMI</button>
+            <div id="bmi-result" style="display:none;margin-top:20px">
+              <div style="text-align:center">
+                <div class="ring-wrap" style="width:120px;height:120px;margin:0 auto 12px">
+                  <svg width="120" height="120" style="transform:rotate(-90deg)">
+                    <circle cx="60" cy="60" r="52" stroke="var(--card2)" stroke-width="8" fill="none"/>
+                    <circle id="bmi-ring" cx="60" cy="60" r="52" stroke="var(--lime)" stroke-width="8" fill="none" stroke-dasharray="327" stroke-dashoffset="327" stroke-linecap="round" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
+                  </svg>
+                  <div class="ring-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                    <div id="bmi-value" style="font-size:32px;font-weight:800;font-family:'Syne',sans-serif;line-height:1">--</div>
+                    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">BMI</div>
+                  </div>
+                </div>
+                <div id="bmi-category" style="font-size:16px;font-weight:600;margin-bottom:4px"></div>
+                <div id="bmi-desc" style="font-size:12px;color:var(--muted)"></div>
+                <div style="margin-top:16px;height:8px;background:var(--card2);border-radius:4px;position:relative;overflow:hidden">
+                  <div style="position:absolute;inset:0;display:flex">
+                    <div style="flex:1;background:linear-gradient(90deg,var(--blue),var(--blue));opacity:0.3"></div>
+                    <div style="flex:1.5;background:linear-gradient(90deg,var(--lime),var(--lime));opacity:0.3"></div>
+                    <div style="flex:1;background:linear-gradient(90deg,var(--orange),var(--orange));opacity:0.3"></div>
+                    <div style="flex:1.5;background:linear-gradient(90deg,var(--red),var(--red));opacity:0.3"></div>
+                  </div>
+                  <div id="bmi-indicator" style="position:absolute;top:-2px;width:4px;height:12px;background:white;border-radius:2px;left:0%;transition:left 1.2s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px var(--lime)"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px">
+                  <span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<div class="weight-log" style="padding-top:16px">
+          <div class="section-label">Log weight</div>
+          <div class="weight-entry-form">
+            <input class="inp" id="wl-input" type="number" step="0.1" placeholder="Today's weight (kg)">
+            <button class="btn btn-lime" onclick="logWeight()">Log</button>
+          </div>
+          <div class="section-label">History</div>
+          <div class="weight-history" id="weight-history"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMINDERS -->
+    <div class="panel" id="page-reminders">
+      <div class="panel-header">
+        <div><div class="panel-sub">Notifications</div><div class="panel-title">Reminders</div></div>
+      </div>
+      <div class="scroll-area" style="padding-top:16px">
+        <div class="reminder-list">
+          <div class="reminder-item">
+            <div class="ri-icon" style="background:rgba(255,140,66,0.15)">🌅</div>
+            <div class="ri-body">
+              <div class="ri-title">Morning food log</div>
+              <div class="ri-time">Every day at 8:00 AM · Log breakfast & plan your day</div>
+            </div>
+            <div class="ri-toggle on" id="r1" onclick="toggleReminder(this)"></div>
+          </div>
+          <div class="reminder-item">
+            <div class="ri-icon" style="background:rgba(200,241,53,0.1)">💪</div>
+            <div class="ri-body">
+              <div class="ri-title">Workout time</div>
+              <div class="ri-time">Workout days at 6:00 PM · Time to move!</div>
+            </div>
+            <div class="ri-toggle on" id="r2" onclick="toggleReminder(this)"></div>
+          </div>
+          <div class="reminder-item">
+            <div class="ri-icon" style="background:rgba(91,138,245,0.15)">🌙</div>
+            <div class="ri-body">
+              <div class="ri-title">Evening water check</div>
+              <div class="ri-time">Every day at 8:00 PM · Hit your hydration goal</div>
+            </div>
+            <div class="ri-toggle on" id="r3" onclick="toggleReminder(this)"></div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+        <div class="weekly-summary" id="weekly-summary-card">
+          <div class="ws-title">📊 Weekly Summary</div>
+          <div class="ws-stats" id="ws-stats"></div>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+pt>
+</body>
+</html>
